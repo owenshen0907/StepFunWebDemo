@@ -1,15 +1,35 @@
-# StepFun Web Demo
+# 大模型基础能力验证与调试前端框架
 
-这是一个基于 **Vue 3**、**Vite**、**Tailwind CSS** 和 **IndexedDB** 的前端示例工程，演示了多环境管理、导航组件、**ASR**（语音转文字）功能以及本地代理转发到 API 的完整流程。
+这是一个基于 **Vue 3**、**Vite**、**Tailwind CSS** 和 **IndexedDB** 的前端框架示例，核心用于大模型基础能力验证与调试。内置对接了 **阶跃星辰** 的大模型接口，并兼容大多数 **OpenAI** 接口协议。通过本框架，你可以实现以下功能：
 
 ---
 
-## 特性
+## 主要功能
 
-- **多环境管理**：通过 `useEnv` 组合函数，将 API 地址和密钥存储在 **IndexedDB** 中，并持久化“激活”环境。支持新增、编辑、删除和切换环境。
-- **导航组件**：`NavBar.vue` + `NavMenu.vue` 实现顶部固定导航，菜单与下拉子菜单分离为独立组件。
-- **ASR 页面**：用来上传音频文件，调用 **StepFun API** 进行转录，并显示响应文本与 `X-Trace-Id`。
-- **动态代理**：在 `vite.config.js` 中配置 `/proxy/*` 路径代理，将前端请求转发到用户选定的环境地址，保留原始请求体和响应头。
+### 1. **快速集成各类大模型**
+
+- **配置简单**：只需配置模型地址与密钥，即可立即调用并测试不同模型能力。
+- **灵活切换**：支持多种大模型环境的快速集成与切换，便于对比不同模型的效果。
+
+### 2. **多环境管理**
+
+- **环境配置**：支持新增、编辑、删除多套模型环境，灵活管理不同模型的配置。
+- **持久化存储**：使用 **IndexedDB** 存储环境配置，确保配置数据的持久化和安全性。
+
+### 3. **调试日志记录**
+
+- **日志存储**：在本地记录每次请求和响应日志，包含请求体、响应头、响应内容。
+- **便于回溯**：提供详细的日志记录，便于开发者回溯和排查问题，提升调试效率。
+
+### 4. **可视化导航**
+
+- **组件化设计**：采用 **Vue** 组件化的导航菜单与页面布局，结构清晰，易于维护。
+- **快速扩展**：支持快速扩展更多前端能力模块，如 **ASR**（语音转文字）、**TTS**（文字转语音）、**图生图** 等。
+
+### 5. **本地代理转发**
+
+- **开发模式支持**：在开发模式下，自动将 `/proxy/*` 路径请求转发到目标大模型服务。
+- **保留原始数据**：代理转发过程中保留原始请求头与响应头（如 `X-Trace-Id`），确保调试信息的完整性。
 
 ---
 
@@ -20,6 +40,14 @@
 - **Tailwind CSS**
 - **IndexedDB**（通过 `idb` 库）
 - **HTTP Proxy**（开发时用作本地代理）
+
+---
+
+## 使用场景
+
+- **大模型能力验证**：快速集成和测试不同大模型的能力，验证其在实际应用中的表现。
+- **开发调试**：提供详细的日志记录和本地代理功能，便于开发者进行问题排查和调试。
+- **多模型对比**：支持多环境管理，方便对比不同模型的效果，选择最适合的模型。
 
 ---
 
@@ -89,69 +117,6 @@ stepfun_web_demo/
 ├─ package.json
 └─ README.md               # 本文档
 ```
-
----
-
-## 环境管理 (useEnv)
-
-- `loadEnvs()`：加载所有环境配置。
-- `saveEnv(env)`：新增/更新环境，自动生成 id。
-- `deleteEnv(id)`：删除指定环境；若当前激活则清空。
-- `loadActiveEnvId()`：读取持久化的激活环境 ID。
-- `setActiveEnvId(id)`：设置并保存当前激活环境 ID。
-
-所有数据均存储在 **IndexedDB** 的两个 `object store`：
-
-- `envs`：保存环境对象，主键为 `id`。
-- `settings`：保存应用级设置，如 `activeEnvId`。
-
----
-
-## 本地代理 (vite.config.js)
-
-开发模式下，**Vite** 会拦截所有 `/proxy/*` 请求，将其转发到用户在环境管理中配置的 `url`：
-
-```javascript
-server: {
-  setupMiddlewares(middlewares, { app }) {
-    app.use('/proxy', (req, res, next) => {
-      const base = req.headers['x-env-base-url']
-      const key  = req.headers['x-env-key']
-
-      // 校验、拼接、设置 Authorization...
-      req.url = req.url.replace(/^\/proxy/, '')
-      proxy.web(req, res, { target: base });
-    });
-    return middlewares
-  }
-}
-```
-
-前端调用示例：
-
-```javascript
-const resp = await fetch('/proxy/audio/transcriptions', {
-  method: 'POST',
-  headers: {
-    'x-env-base-url': selectedEnv.url,
-    'x-env-key':      selectedEnv.key,
-  },
-  body: formData
-});
-```
-
-代理会原封不动透传响应头，保证 `X-Trace-Id` 等自定义头能够在浏览器端获取。
-
----
-
-## ASR 页面示例
-
-`/src/pages/audio/asr/AsrPage.vue`：
-
-- 支持选择模型 (`step-asr`, `step-asr-mini`, …)
-- 支持 `json`、`text`、`srt`、`vtt`
-- 选择本地音频后可回放或删除
-- 调用 `/proxy/audio/transcriptions`，显示返回文本与 `Trace ID`
 
 ---
 
