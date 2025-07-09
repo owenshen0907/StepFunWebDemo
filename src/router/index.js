@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage   from '@/pages/HomePage.vue'
 import AsrPage    from '@/pages/audio/asr/AsrPage.vue'
+import ImageToImagePage from '@/pages/media/image-to-image/ImageToImagePage.vue'
 
 const Placeholder = { template: '<div class="p-4">占位页</div>' }
 
@@ -17,7 +18,7 @@ const routes = [
 
     // Media 子路由
     { path: '/media/text2img',    component: Placeholder },
-    { path: '/media/img2img',     component: Placeholder },
+    { path: '/media/img2img',     component: ImageToImagePage },
     { path: '/media/text2video',  component: Placeholder },
     { path: '/chat',   component: Placeholder },
     { path: '/doc',    component: Placeholder },
