@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="pt-18 bg-white">
     <!-- 导航栏 -->
     <NavBar @open-env="showEnv = true" />
 
@@ -11,10 +11,10 @@
         @close="showEnv = false"
     />
 
-    <main class="container mx-auto px-6 py-8">
-      <h2 class="text-2xl font-semibold mb-6">语音转文字 (ASR)</h2>
+    <main class="container mx-auto px-6 py-8 space-y-8 bg-white rounded-xl shadow-lg mt-4">
+      <h2 class="text-2xl font-semibold mb-6 text-gray-800">语音转文字 (ASR)</h2>
 
-      <form @submit.prevent="onSubmit" class="bg-white p-6 rounded-lg shadow-md space-y-6">
+      <form @submit.prevent="onSubmit" class="bg-white p-8 rounded-xl shadow-lg space-y-8 transition-all hover:shadow-xl">
         <!-- Model -->
         <div>
           <label class="block text-gray-700 mb-2">Model</label>
