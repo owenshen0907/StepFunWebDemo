@@ -19,19 +19,21 @@ const dbPromise = openDB(DB_NAME, DB_VERSION, {
     }
 })
 
-export default function useEnv() {
-    const envs = ref([])
-    const activeEnvId = ref('')
+// 单例化 state，确保多处使用同一引用
+const envs = ref([])
+const activeEnvId = ref('')
 
-    // 加载所有环境，若为空则添加并去重默认环境
+export default function useEnv() {
+    /**
+     * 加载所有环境，首次则插入默认并去重
+     */
     async function loadEnvs() {
         const db = await dbPromise
         let all = await db.getAll(STORE_ENVS)
 
-        // 默认环境 URL
         const defaultURL = 'https://api.stepfun.com/v1'
-        // 如果默认环境多条，删除多余的
-        const dup = all.filter(env => env.url === defaultURL)
+        // 删除多余默认记录
+        const dup = all.filter(e => e.url === defaultURL)
         if (dup.length > 1) {
             for (let i = 1; i < dup.length; i++) {
                 await db.delete(STORE_ENVS, dup[i].id)
@@ -54,23 +56,20 @@ export default function useEnv() {
         }
     }
 
-    // 保存或更新环境
+    /**
+     * 保存或更新环境
+     */
     async function saveEnv(env) {
         const db = await dbPromise
-        if (!env.id) {
-            env.id = crypto.randomUUID()
-        }
-        const cleanEnv = {
-            id: env.id,
-            name: env.name,
-            url: env.url,
-            key: env.key
-        }
+        if (!env.id) env.id = crypto.randomUUID()
+        const cleanEnv = { id: env.id, name: env.name, url: env.url, key: env.key }
         await db.put(STORE_ENVS, cleanEnv)
         await loadEnvs()
     }
 
-    // 删除环境
+    /**
+     * 删除环境
+     */
     async function deleteEnv(id) {
         const db = await dbPromise
         await db.delete(STORE_ENVS, id)
@@ -80,14 +79,18 @@ export default function useEnv() {
         }
     }
 
-    // 加载当前激活环境 ID
+    /**
+     * 加载当前激活环境 ID
+     */
     async function loadActiveEnvId() {
         const db = await dbPromise
         const rec = await db.get(STORE_SETTINGS, 'activeEnvId')
         activeEnvId.value = rec?.value || ''
     }
 
-    // 设置并持久化激活环境 ID
+    /**
+     * 设置并持久化激活环境 ID
+     */
     async function setActiveEnvId(id) {
         const db = await dbPromise
         activeEnvId.value = id

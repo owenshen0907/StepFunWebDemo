@@ -3,7 +3,6 @@
     <!-- 导航栏 -->
     <NavBar @open-env="showEnv = true" />
 
-
     <!-- 环境弹框 -->
     <EnvModal
         :show="showEnv"
@@ -32,19 +31,19 @@
           <label class="block text-gray-700 mb-2">Response Format</label>
           <div class="mt-2 space-x-4">
             <label class="inline-flex items-center">
-              <input type="radio" value="json" v-model="responseFormat" class="form-radio" />
+              <input type="radio" value="json" v-model="responseFormat" />
               <span class="ml-2">JSON</span>
             </label>
             <label class="inline-flex items-center">
-              <input type="radio" value="text" v-model="responseFormat" class="form-radio" />
+              <input type="radio" value="text" v-model="responseFormat" />
               <span class="ml-2">Text</span>
             </label>
             <label class="inline-flex items-center">
-              <input type="radio" value="srt" v-model="responseFormat" class="form-radio" />
+              <input type="radio" value="srt" v-model="responseFormat" />
               <span class="ml-2">SRT</span>
             </label>
             <label class="inline-flex items-center">
-              <input type="radio" value="vtt" v-model="responseFormat" class="form-radio" />
+              <input type="radio" value="vtt" v-model="responseFormat" />
               <span class="ml-2">VTT</span>
             </label>
           </div>
@@ -70,9 +69,7 @@
                 @click="removeFile"
                 class="ml-4 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-400 transition"
                 :disabled="loading"
-            >
-              删除
-            </button>
+            >删除</button>
           </div>
           <div v-if="file" class="mt-4">
             <audio :src="audioUrl" controls class="w-full" />
@@ -97,9 +94,7 @@
               type="button"
               @click="cancelRequest"
               class="flex-1 py-3 bg-gray-400 text-white rounded hover:bg-gray-300 transition"
-          >
-            取消
-          </button>
+          >取消</button>
         </div>
       </form>
 
@@ -120,10 +115,8 @@
         <pre class="whitespace-pre-wrap text-gray-800">{{ result }}</pre>
       </div>
     </main>
-
   </div>
 </template>
-
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
@@ -132,20 +125,37 @@ import EnvModal from '@/components/EnvModal.vue'
 import useEnv from '@/composables/useEnv.js'
 
 // 环境配置
-const { envs, loadEnvs, saveEnv } = useEnv()
-const showEnv     = ref(false)
+const { envs, activeEnvId, loadEnvs, loadActiveEnvId, saveEnv } = useEnv()
+const showEnv = ref(false)
 const selectedEnv = ref({})
-watch(envs, v => { if (v.length) selectedEnv.value = v[0] }, { immediate: true })
-onMounted(loadEnvs)
 
-// 状态
-const model           = ref('step-asr')
-const responseFormat  = ref('json')
-const file            = ref(null)
-const audioUrl        = ref('')
-const result          = ref('')
-const traceId         = ref('')
-const loading         = ref(false)
+// 初始化加载并监听激活环境
+onMounted(async () => {
+  await loadEnvs()
+  await loadActiveEnvId()
+})
+watch(
+    [() => envs.value, () => activeEnvId.value],
+    ([list, id]) => {
+      if (id && list.length) {
+        const found = list.find(e => e.id === id)
+        if (found) selectedEnv.value = found
+      } else if (list.length) {
+        // 未激活时退回第一条
+        selectedEnv.value = list[0]
+      }
+    },
+    { immediate: true }
+)
+
+// ASR 状态
+const model = ref('step-asr')
+const responseFormat = ref('json')
+const file = ref(null)
+const audioUrl = ref('')
+const result = ref('')
+const traceId = ref('')
+const loading = ref(false)
 const abortController = ref(null)
 
 function onFileChange(e) {
@@ -158,6 +168,7 @@ function removeFile() {
   file.value = null
   audioUrl.value = ''
 }
+
 async function onSubmit() {
   if (!file.value) {
     return alert('请先选择音频文件')
@@ -175,23 +186,19 @@ async function onSubmit() {
       method: 'POST',
       headers: {
         'X-Env-Base-Url': selectedEnv.value.url,
-        'X-Env-Key':      selectedEnv.value.key,
+        'X-Env-Key': selectedEnv.value.key,
       },
       body: formData,
       signal: abortController.value.signal,
     })
 
-    // 先检查状态，不是 2xx 就展示错误文本
     if (!response.ok) {
       const text = await response.text()
       result.value = `Error ${response.status}: ${text}`
       return
     }
 
-    // 正常拿到 X-Trace-Id
     traceId.value = response.headers.get('X-Trace-Id') || ''
-
-    // 拿到 JSON 结果
     const data = await response.json()
     result.value = JSON.stringify(data, null, 2)
   } catch (e) {
@@ -205,10 +212,16 @@ async function onSubmit() {
     abortController.value = null
   }
 }
-function cancelRequest() { abortController.value && abortController.value.abort() }
-function onSaveEnv(env) { saveEnv(env); showEnv.value = false }
-</script>
 
+function cancelRequest() {
+  abortController.value && abortController.value.abort()
+}
+
+function onSaveEnv(env) {
+  saveEnv(env)
+  showEnv.value = false
+}
+</script>
 
 <style scoped>
 /* Tailwind CSS 实用类管理样式 */
