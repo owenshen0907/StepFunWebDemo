@@ -23,17 +23,50 @@ export default function useEnv() {
     const envs = ref([])
     const activeEnvId = ref('')
 
-    // 加载所有环境
+    // 加载所有环境，若为空则添加并去重默认环境
     async function loadEnvs() {
         const db = await dbPromise
-        envs.value = await db.getAll(STORE_ENVS)
+        let all = await db.getAll(STORE_ENVS)
+
+        // 默认环境 URL
+        const defaultURL = 'https://api.stepfun.com/v1'
+        // 如果默认环境多条，删除多余的
+        const dup = all.filter(env => env.url === defaultURL)
+        if (dup.length > 1) {
+            for (let i = 1; i < dup.length; i++) {
+                await db.delete(STORE_ENVS, dup[i].id)
+            }
+            all = await db.getAll(STORE_ENVS)
+        }
+
+        if (all.length === 0) {
+            // 插入默认环境，Key 留空
+            const defaultEnv = {
+                id: crypto.randomUUID(),
+                name: '阶跃生产',
+                url: defaultURL,
+                key: ''
+            }
+            await db.put(STORE_ENVS, defaultEnv)
+            envs.value = [defaultEnv]
+        } else {
+            envs.value = all
+        }
     }
 
     // 保存或更新环境
     async function saveEnv(env) {
         const db = await dbPromise
-        if (!env.id) env.id = crypto.randomUUID()
-        await db.put(STORE_ENVS, env)
+        if (!env.id) {
+            env.id = crypto.randomUUID()
+        }
+        const cleanEnv = {
+            id: env.id,
+            name: env.name,
+            url: env.url,
+            key: env.key
+        }
+        await db.put(STORE_ENVS, cleanEnv)
         await loadEnvs()
     }
 
