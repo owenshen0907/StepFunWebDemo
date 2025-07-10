@@ -28,8 +28,10 @@
 
 ### 5. **本地代理转发**
 
-- **开发模式支持**：在开发模式下，自动将 `/proxy/*` 路径请求转发到目标大模型服务。
-- **保留原始数据**：代理转发过程中保留原始请求头与响应头（如 `X-Trace-Id`），确保调试信息的完整性。
+- **开发模式支持**：在开发模式下，自动将 `/proxy/*` 路径请求转发到目标大模型服务
+- **CORS 解决方案**：通过本地代理绕过浏览器同源策略限制
+- **请求头保留**：完整传递原始请求头（包括 Authorization 等认证信息）
+- **调试支持**：在浏览器开发者工具中可查看完整请求/响应记录
 
 ---
 
@@ -53,20 +55,40 @@
 
 ## 安装与运行
 
+### 环境要求（必须严格匹配）
+
+✅ **Node.js**: v20.12.0 (通过 `.nvmrc` 强制指定)  
+✅ **PNPM**: 8.15.4+ (推荐使用 exact 8.15.4 版本)  
+⚠️ 注意：版本不匹配会导致依赖安装失败！
+
 1. **克隆仓库**
 
    ```bash
-   git clone <仓库地址>
-   cd stepfun_web_demo
-   ```
-
-2. **安装依赖**
+   git clone https://github.com/owenshen0907/StepFunWebDemo.git
+   cd StepFunWebDemo
+```
+2. **环境准备**
 
    ```bash
-   npm install
+   # 安装指定 Node 版本（必须使用 v20.12.0）
+   nvm install
+   # 切换项目 Node 环境
+   nvm use
+   
+   # 安装 pnpm（若未安装）
+   npm install -g pnpm@8.15.4
    ```
 
-3. **启动开发服务器**
+3. **安装项目依赖**
+
+   请先确保已切换至正确的 Node 版本：
+
+   ```bash
+   nvm use
+   pnpm install
+   ```
+
+4. **启动开发服务器**
 
    ```bash
    npm run dev
@@ -77,8 +99,8 @@
 4. **生产构建**
 
    ```bash
+   nvm use
    npm run build
-   ```
 
 5. **预览构建结果**
 
@@ -111,9 +133,11 @@ stepfun_web_demo/
 │  │  └─ api.js            # transcribe 方法
 │  ├─ main.js              # 入口 JS
 │  └─ App.vue              # 根组件
-├─ vite.config.js          # Vite 配置（包含代理）
+├─ vite.config.js          # Vite 配置（包含代理配置）
 ├─ postcss.config.cjs      # PostCSS & TailwindCSS 配置
 ├─ tailwind.config.js      # Tailwind 配置
+├─ .nvmrc                 # Node 版本管理配置
+├─ jsconfig.json          # JavaScript 项目配置
 ├─ package.json
 └─ README.md               # 本文档
 ```
