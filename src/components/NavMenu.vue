@@ -42,9 +42,9 @@
                transform -translate-y-2 group-hover:translate-y-0
                transition-all duration-200 ease-out"
       >
-        <li><router-link to="/media/text2img" class="block px-4 py-2 hover:bg-gray-100">文生图</router-link></li>
+        <li><router-link to="/media/text2img" class="block px-4 py-2 hover:bg-gray-100  rounded-t-lg">文生图</router-link></li>
         <li><router-link to="/media/img2img" class="block px-4 py-2 hover:bg-gray-100">图生图</router-link></li>
-        <li><router-link to="/media/text2video" class="block px-4 py-2 hover:bg-gray-100">文生视频</router-link></li>
+        <li><router-link to="/media/text2video" class="block px-4 py-2 hover:bg-gray-100 rounded-b-lg">文生视频</router-link></li>
       </ul>
     </li>
 
