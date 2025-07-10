@@ -66,9 +66,8 @@
    ```bash
    git clone https://github.com/owenshen0907/StepFunWebDemo.git
    cd StepFunWebDemo
-```
+   ```
 2. **环境准备**
-
    ```bash
    # 安装指定 Node 版本（必须使用 v20.12.0）
    nvm install
@@ -81,11 +80,11 @@
 
 3. **安装项目依赖**
 
-   请先确保已切换至正确的 Node 版本：
+   请先确保已切换至正确的 Node 版本：默认node v20.19.3（如果没有可以先安装nvm）
 
    ```bash
    nvm use
-   pnpm install
+   npm install
    ```
 
 4. **启动开发服务器**
